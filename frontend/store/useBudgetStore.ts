@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-// Budget fields
 export type BudgetData = {
   income: number;
   monthlyBills: number;
@@ -34,7 +33,6 @@ export const useBudgetStore = create<BudgetState>()(
       },
       status: 'Local Only',
 
-      // Auto-save field value instantly
       updateField: (field, value) =>
         set((state) => ({
           data: { ...(state as any).data, [field]: value },

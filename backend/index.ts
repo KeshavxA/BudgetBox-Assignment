@@ -8,9 +8,6 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
-// ---------------------------------------------------------
-// SEED DATA (Hardcoded Login)
-// ---------------------------------------------------------
 async function seedUser() {
   const email = 'hire-me@anshumat.org';
   const exists = await prisma.user.findUnique({ where: { email } });
@@ -24,21 +21,16 @@ async function seedUser() {
     console.log("✅ Seed user created: hire-me@anshumat.org");
   }
 }
-// Run seed but don't crash the app if DB is unavailable
+
 seedUser().catch((err) => {
   console.warn('Seed skipped or failed:', err && err.message ? err.message : err);
 });
 
-// Health check root
+
 app.get('/', (_req: Request, res: Response) => {
   res.json({ status: 'ok', service: 'BudgetBox backend', timestamp: new Date() });
 });
 
-// ---------------------------------------------------------
-// API ENDPOINTS
-// ---------------------------------------------------------
-
-// API 1: SYNC (Push local data to server) [Mandatory]
 app.post('/budget/sync', async (req: Request, res: Response) => {
   const { email, budget } = req.body;
   
@@ -50,7 +42,6 @@ app.post('/budget/sync', async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Save the new budget state to the history
     await prisma.budget.create({
       data: {
         userId: user.id,
@@ -70,7 +61,6 @@ app.post('/budget/sync', async (req: Request, res: Response) => {
   }
 });
 
-// API 2: LATEST (Get most recent save) [Mandatory]
 app.get('/budget/latest', async (req: Request, res: Response) => {
   const { email } = req.query;
   
@@ -78,7 +68,6 @@ app.get('/budget/latest', async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { email: String(email) } });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Fetch the most recently updated record
     const latestBudget = await prisma.budget.findFirst({
       where: { userId: user.id },
       orderBy: { updatedAt: 'desc' }
@@ -90,7 +79,7 @@ app.get('/budget/latest', async (req: Request, res: Response) => {
   }
 });
 
-// API 3: HISTORY (Get all past versions) [New Feature]
+
 app.get('/budget/history', async (req: Request, res: Response) => {
   const { email } = req.query;
 
@@ -101,7 +90,7 @@ app.get('/budget/history', async (req: Request, res: Response) => {
     const history = await prisma.budget.findMany({
       where: { userId: user.id },
       orderBy: { updatedAt: 'desc' },
-      take: 10 // Limit to last 10 entries
+      take: 10 
     });
 
     res.json(history);

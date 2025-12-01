@@ -9,17 +9,14 @@ export default function Dashboard() {
   const { data, status, updateField, setSyncStatus, loadFromServer } = useBudgetStore();
   const [isClient, setIsClient] = useState(false);
 
-  // 1. Initialize & Fetch Data from API on Load
   useEffect(() => {
     setIsClient(true);
     
-    // Define the fetch function
     const fetchLatestData = async () => {
       try {
         const res = await fetch('http://localhost:3001/budget/latest?email=hire-me@anshumat.org');
         if (res.ok) {
           const serverData = await res.json();
-          // Only load if server returned actual data (not empty object)
           if (serverData && serverData.income !== undefined) {
              loadFromServer(serverData);
              console.log("Data loaded from API:", serverData);
@@ -30,16 +27,13 @@ export default function Dashboard() {
       }
     };
 
-    // Attempt fetch on mount
     fetchLatestData();
 
-    // Auto-sync listener for when internet returns
     const handleOnline = () => handleSync(); 
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
-  }, []); // Empty dependency array = runs once on mount
+  }, []); 
 
-  // Calculations [cite: 20-21]
   const totalExpenses = data.monthlyBills + data.food + data.transport + data.subscriptions + data.miscellaneous;
   const savings = data.income - totalExpenses;
   const burnRate = data.income > 0 ? ((totalExpenses / data.income) * 100).toFixed(1) : "0";
@@ -52,7 +46,7 @@ export default function Dashboard() {
     { name: 'Misc', value: data.miscellaneous },
   ].filter(d => d.value > 0);
 
-  // 2. Sync Logic (Push to API) [cite: 64]
+  
   const handleSync = async () => {
     setSyncStatus('Sync Pending');
     try {
@@ -67,13 +61,13 @@ export default function Dashboard() {
       
       if (res.ok) {
         setSyncStatus('Synced');
-        // Optional: clear any dirty flags here
+       
       } else {
         throw new Error("Sync failed");
       }
     } catch (e) {
       alert("Network Error: Data saved locally only. Will sync later.");
-      // Status stays 'Sync Pending' or similar
+    
     }
   };
 
@@ -83,7 +77,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
       <div className="max-w-5xl mx-auto">
         
-        {/* Header */}
         <header className="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">BudgetBox 📦</h1>
@@ -108,7 +101,6 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Form */}
           <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">📝 Edit Budget</h2>
             <div className="space-y-4">
@@ -132,7 +124,6 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* Analytics */}
           <div className="space-y-6">
             <section className="grid grid-cols-2 gap-4">
               <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
