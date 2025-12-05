@@ -8,13 +8,14 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 export default function Dashboard() {
   const { data, status, updateField, setSyncStatus, loadFromServer } = useBudgetStore();
   const [isClient, setIsClient] = useState(false);
+  const API = (process.env.NEXT_PUBLIC_API_URL as string) || 'http://localhost:3001';
 
   useEffect(() => {
     setIsClient(true);
     
     const fetchLatestData = async () => {
       try {
-        const res = await fetch('http://localhost:3001/budget/latest?email=hire-me@anshumat.org');
+  const res = await fetch(`${API}/budget/latest?email=hire-me@anshumat.org`);
         if (res.ok) {
           const serverData = await res.json();
           if (serverData && serverData.income !== undefined) {
@@ -50,7 +51,7 @@ export default function Dashboard() {
   const handleSync = async () => {
     setSyncStatus('Sync Pending');
     try {
-      const res = await fetch('http://localhost:3001/budget/sync', {
+  const res = await fetch(`${API}/budget/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
